@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>حرف التراث السعودي</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--sand:#ece6f7;--brown:#3b2a5c;--gold:#9b7fd1;--green:#6b4fa3;--red:#b03a5b}
+html{height:100%}*{box-sizing:border-box}
+body{margin:0;min-height:100%;font-family:'Tajawal',Tahoma,Arial,sans-serif;color:var(--brown);background-color:var(--sand);
+background-image:linear-gradient(135deg,rgba(155,127,209,.2) 25%,transparent 25%),linear-gradient(225deg,rgba(155,127,209,.2) 25%,transparent 25%),linear-gradient(45deg,rgba(59,42,92,.08) 25%,transparent 25%),linear-gradient(315deg,rgba(59,42,92,.08) 25%,transparent 25%);background-size:44px 44px;background-position:22px 0,22px 0,0 0,0 0}
+.screen{display:none;min-height:100vh;padding:16px 12px;flex-direction:column;align-items:center;justify-content:center;text-align:center;max-width:600px;margin:auto}
+.screen.on{display:flex}
+.frame{border:4px double var(--gold);background:rgba(250,247,255,.94);border-radius:18px;padding:18px 14px;width:100%;box-shadow:0 6px 18px rgba(59,42,92,.25)}
+h1{font-size:2.1rem;margin:6px 0;font-weight:800}.sub{margin:0 0 18px;font-size:1.05rem}.palm{font-size:3rem}
+button{font-family:inherit;cursor:pointer;border:0;border-radius:12px;font-weight:800}
+.big{background:var(--green);color:#fff;font-size:1.4rem;padding:12px 44px;box-shadow:0 4px 0 #4a3578}
+.big:active{transform:translateY(3px);box-shadow:0 1px 0 #4a3578}
+.small{background:var(--gold);color:#fff;padding:8px 18px;font-size:1rem;margin-top:12px}
+.setup{margin-top:14px;text-align:right;display:none}.setup.on{display:block}
+.setup label{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:8px 0;font-weight:700;font-size:.95rem}.setup input{max-width:55%;font-size:.8rem}
+.score{font-weight:700;margin-bottom:6px}
+.pic{font-size:5rem;background:#fff;border:3px solid var(--gold);border-radius:14px;padding:6px 0;margin:8px auto;width:150px;line-height:1.3}
+.pic.has{width:230px;padding:0;overflow:hidden;font-size:0}.pic.has img{display:block;width:100%;height:160px;object-fit:cover}
+.q{font-size:1.2rem;font-weight:800;margin:6px 0}
+#map3d{width:100%;max-width:520px;height:380px;margin:auto;touch-action:none;cursor:grab}#map3d canvas{display:block;width:100%;height:100%}
+.hint{font-size:.85rem;opacity:.8}
+.legend{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.lg{background:#fff;color:var(--brown);border:1px solid var(--gold);border-radius:20px;padding:4px 10px;font-size:.85rem;font-weight:700}
+.lg b{color:var(--green)}
+.overlay{position:fixed;inset:0;background:rgba(30,18,55,.65);display:none;align-items:center;justify-content:center;padding:16px;z-index:5}.overlay.on{display:flex}
+.card{background:#faf7ff;border:4px double var(--gold);border-radius:18px;padding:18px;max-width:420px;width:100%;max-height:92vh;overflow-y:auto;text-align:right}
+.res{font-weight:800;font-size:1.2rem;text-align:center;margin:0 0 8px}.ok{color:var(--green)}.no{color:var(--red)}
+.card h2{margin:4px 0;text-align:center}.card .pic{width:100px;font-size:3.2rem}.card .pic.has{width:200px}
+.card p{margin:6px 0;line-height:1.7}.card b{color:var(--red)}
+.card .big{display:block;margin:12px auto 0;font-size:1.2rem;padding:10px 36px}
+</style>
+</head>
+<body>
+<div id="start" class="screen on">
+  <div class="frame">
+    <div class="palm">🌴🐪🌴</div>
+    <h1>حرف التراث السعودي</h1>
+    <p class="sub">اختبر معرفتك بالحرف اليدوية في مناطق المملكة العربية السعودية</p>
+    <button class="big" id="go">ابدأ</button><br>
+    <button class="small" id="imgBtn">📷 إضافة صور الحرف</button>
+    <div class="setup" id="setup"></div>
+  </div>
+</div>
+
+<div id="game" class="screen">
+  <div class="frame">
+    <div class="score">النقاط: <span id="sc">0</span> / <span id="tot">0</span></div>
+    <div class="q" id="qt"></div>
+    <div class="pic" id="pic"></div>
+    <div id="map3d"></div>
+    <div class="hint">اسحب لتدوير الخريطة، واضغط على المنطقة أو رقمها، أو اختر من القائمة</div>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+<div class="overlay" id="ov"><div class="card" id="card"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const R={1:"تبوك",2:"الجوف",3:"الحدود الشمالية",4:"حائل",5:"القصيم",6:"المدينة المنورة",7:"مكة المكرمة",8:"الرياض",9:"الشرقية",11:"عسير",12:"جازان",13:"نجران",14:"الأحساء",15:"جدة",16:"الطائف"};
+const LM={1:["قلعة تبوك","fort"],2:["قلعة مارد","fort"],3:["متحف الحدود الشمالية","hall"],4:["جُبّة (النقوش الصخرية)","rock"],5:["بيت البسام (عنيزة)","mud"],6:["الحِجر (مدائن صالح)","tomb"],7:["برج الساعة (مكة)","tower"],8:["الدرعية (حي الطريف)","mud"],9:["مركز إثراء (الظهران)","hall"],11:["رجال ألمع","tower"],12:["جزر فرسان","light"],13:["الأخدود الأثري","ruin"],14:["واحة الأحساء","palm"],15:["جدة التاريخية","roshan"],16:["قصر شبرا (الطائف)","mud"]};
+const POLY={
+1:[[70,100],[100,70],[122,98],[112,135],[52,126]],
+2:[[100,70],[130,40],[150,75],[168,102],[122,98]],
+3:[[130,40],[205,50],[231,70],[215,105],[168,102],[150,75]],
+4:[[122,98],[168,102],[215,105],[218,138],[135,142],[112,135]],
+5:[[135,142],[218,138],[212,165],[140,168]],
+6:[[52,126],[112,135],[135,142],[140,168],[100,175],[44,170],[35,150]],
+7:[[72,175],[100,175],[140,168],[145,185],[112,198],[80,195]],
+8:[[140,168],[212,165],[225,195],[215,242],[168,238],[150,205]],
+9:[[231,70],[262,95],[335,150],[350,170],[272,180],[265,222],[270,238],[240,285],[215,242],[225,195],[212,165],[218,138],[215,105]],
+11:[[58,200],[76,206],[100,215],[150,205],[168,238],[150,270],[120,290],[88,252]],
+12:[[120,290],[150,270],[175,300],[170,325]],
+13:[[150,270],[168,238],[215,242],[240,285],[170,325],[175,300]],
+14:[[350,170],[365,190],[300,215],[270,238],[265,222],[272,180]],
+15:[[44,170],[72,175],[80,195],[76,206],[58,200]],
+16:[[112,198],[145,185],[150,205],[100,215],[76,206],[80,195]]};
+const POS={1:[92,108],2:[138,82],3:[188,80],4:[168,122],5:[176,155],6:[88,152],7:[105,185],8:[185,203],9:[285,135],11:[128,246],12:[145,290],13:[195,275],14:[312,196],15:[62,188],16:[118,207]};
+const crafts=[
+{n:"صناعة السدو",e:"🧶",r:2,d:"فن نسج تقليدي تصنعه نساء البادية بخيوط ملونة على النول الأفقي، وهو مسجّل ضمن قائمة اليونسكو للتراث غير المادي.",m:"صوف الأغنام، وشعر الماعز، ووبر الإبل",u:"الخيام (بيوت الشعر)، والسجاد، والوسائد، وزينة الإبل"},
+{n:"صناعة البشت (المشلح)",e:"🧥",r:14,d:"عباءة رجالية فاخرة تُنسج وتُطرَّز حواشيها بخيوط الزري، وتشتهر بها الأحساء.",m:"الصوف أو وبر الإبل، وخيوط الزري الذهبية",u:"الأعراس، والمناسبات الرسمية، والأعياد"},
+{n:"صناعة المنجور (الرواشين الخشبية)",e:"🪟",r:7,d:"أعمال خشبية مخرّمة بنقوش هندسية تُركَّب على نوافذ البيوت الحجازية القديمة وتسمح بدخول الهواء وتحجب الرؤية.",m:"الخشب (مثل الساج) والمسامير الخشبية",u:"نوافذ وشرفات البيوت التراثية، خصوصًا في جدة التاريخية"},
+{n:"صناعة الدلال النحاسية",e:"☕",r:4,d:"صناعة أواني تقديم القهوة العربية، وترمز للكرم والضيافة في المجتمع السعودي.",m:"النحاس والحديد",u:"مجالس الضيافة وتقديم القهوة العربية"},
+{n:"صناعة الخوص والسعفيات",e:"🧺",r:5,d:"حرفة تضفير سعف النخيل وخوصه لصنع أدوات يومية، وتنتشر في المناطق التي تكثر فيها النخيل.",m:"سعف النخيل وخوصه والجريد والليف",u:"السلال والقفف، والمراوح، والحصر، وسفر الطعام"},
+{n:"صناعة الطواقي التقليدية",e:"🧢",r:12,d:"حرفة صناعة الطواقي (أغطية الرأس) التقليدية بالخياطة والتطريز اليدوي، وتشتهر بها منطقة جازان.",m:"أقمشة قطنية وخيوط ملونة للتطريز",u:"غطاء للرأس في الحياة اليومية والمناسبات"},
+{n:"صناعة الفخار النجراني",e:"🏺",r:13,d:"حرفة تشكيل الطين وحرقه لصنع أوانٍ تقليدية، وتُعرف بها منطقة نجران.",m:"الطين والماء والرمل، وتُحرق في الأفران التقليدية",u:"حفظ الماء، والطبخ، والمباخر، والزينة"},
+{n:"البناء بالطين ونقش الأبواب النجدية",e:"🚪",r:8,d:"حرفة بناء البيوت والقصور والأسوار من الطين، مع نقش الأبواب الخشبية بزخارف هندسية تميّز العمارة النجدية مثل الدرعية.",m:"الطين والتبن وجذوع النخل وخشب الأثل",u:"البيوت التراثية والقصور والأسوار والأبواب"},
+{n:"المشغولات الخشبية والتطعيم بالصدف",e:"🪑",r:15,d:"حرفة نحت الخشب وتزيينه بقطع الصدف لصنع قطع فنية وأثاث تقليدي، وتشتهر بها جدة.",m:"الخشب، والصدف، وأدوات النحت",u:"الأثاث، والصناديق، والتحف، والهدايا التراثية"},
+{n:"صناعة العقال المقصّب",e:"🪢",r:16,d:"حرفة صناعة العقال الرجالي وتزيينه بخيوط القصب اللامعة، وتشتهر بها الطائف.",m:"خيوط الصوف أو القطن مع خيوط القصب اللامعة",u:"يُلبس فوق الغترة أو الشماغ في المناسبات"}];
+
+const EX={7:[15,16],15:[7],16:[7],9:[14],14:[9]};
+const $=id=>document.getElementById(id);
+let score=0,total=0,cur=null,last=-1,locked=false,sel=[],disp={},T3=0,applyScene=()=>{},drawNum=()=>{};
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("on",s.id===id))}
+function setPic(el,c){if(c.img){el.classList.add("has");el.innerHTML='<img alt="'+c.n+'" src="'+c.img+'">'}else{el.classList.remove("has");el.textContent=c.e}}
+
+function next(){
+  let i;do{i=Math.floor(Math.random()*crafts.length)}while(i===last);
+  last=i;cur=crafts[i];locked=false;
+  const others=Object.keys(R).map(Number).filter(k=>k!==cur.r&&!(EX[cur.r]||[]).includes(k)).sort(()=>Math.random()-.5).slice(0,4);
+  sel=[cur.r].concat(others).sort(()=>Math.random()-.5);
+  sel.forEach((k,j)=>disp[k]=j+1);
+  setPic($("pic"),cur);$("qt").textContent="حرفة «"+cur.n+"»: من أي منطقة هي؟";
+  $("sc").textContent=score;$("tot").textContent=total;
+  const order=sel.slice().sort((a,b)=>disp[a]-disp[b]);
+  $("legend").innerHTML=order.map(k=>'<button class="lg" data-r="'+k+'"><b>'+disp[k]+'</b> - '+R[k]+'</button>').join('');
+  applyScene();
+}
+$("legend").addEventListener("click",e=>{const b=e.target.closest(".lg");if(b)answer(+b.dataset.r)});
+
+function answer(k){
+  if(locked||!sel.includes(k))return;locked=true;total++;
+  const ok=k===cur.r;if(ok)score++;
+  $("card").innerHTML='<p class="res '+(ok?'ok':'no')+'">'+(ok?'✅ إجابة صحيحة!':'❌ إجابتك خطأ')+'</p>'+
+   '<div class="pic" id="cpic"></div><h2>'+cur.n+'</h2>'+
+   '<p><b>المنطقة:</b> '+R[cur.r]+'</p><p><b>الوصف:</b> '+cur.d+'</p>'+
+   '<p><b>المواد المستخدمة:</b> '+cur.m+'</p><p><b>أين تُستخدم:</b> '+cur.u+'</p>'+
+   '<button class="big" id="learn">تعلّمت</button>';
+  $("ov").classList.add("on");setPic($("cpic"),cur);
+  $("learn").onclick=()=>{$("ov").classList.remove("on");show("start")};
+}
+
+crafts.forEach(c=>{const l=document.createElement("label");l.innerHTML='<span>'+c.n+'</span><input type="file" accept="image/*">';l.querySelector("input").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{c.img=r.result};r.readAsDataURL(f)};$("setup").appendChild(l)});
+$("imgBtn").onclick=()=>$("setup").classList.toggle("on");
+
+function init3D(){
+if(T3||!window.THREE)return;T3=1;
+try{
+const box=$('map3d'),W=box.clientWidth||340,H=box.clientHeight||380;
+const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(40,W/H,1,1200);cam.position.set(0,0,500);
+const rd=new THREE.WebGLRenderer({antialias:true,alpha:true});rd.setPixelRatio(Math.min(devicePixelRatio,2));rd.setSize(W,H,false);box.appendChild(rd.domElement);
+sc.add(new THREE.AmbientLight(0xffffff,.75));const dl=new THREE.DirectionalLight(0xffffff,.7);dl.position.set(-150,200,300);sc.add(dl);
+const piv=new THREE.Group(),grp=new THREE.Group();piv.add(grp);sc.add(piv);piv.rotation.x=-.85;
+const mat=c=>new THREE.MeshLambertMaterial({color:c});
+const bx=(g,w,h,d,x,y,z,c)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y,z);g.add(m)};
+const cyl=(g,r1,r2,h,x,y,z,c)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,10),mat(c));m.rotation.x=Math.PI/2;m.position.set(x,y,z);g.add(m)};
+const cone=(g,r,h,x,y,z,c)=>{const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,8),mat(c));m.rotation.x=Math.PI/2;m.position.set(x,y,z);g.add(m)};
+const ball=(g,r,x,y,z,c,sz)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(r,10,8),mat(c));m.scale.z=sz||1;m.position.set(x,y,z);g.add(m)};
+const MK={
+fort:g=>{bx(g,14,14,8,0,0,4,0xa8743a);[[-6,-6],[6,-6],[-6,6],[6,6]].forEach(p=>bx(g,4,4,13,p[0],p[1],6.5,0x8f5f2e))},
+hall:g=>{bx(g,18,10,7,0,0,3.5,0xc9a06a);bx(g,6,6,6,0,0,10,0xb98a52);ball(g,4,0,0,15,0xe8dcc0)},
+rock:g=>{bx(g,8,8,16,-4,0,8,0x9b8466);bx(g,6,6,11,5,2,5.5,0xa8916f);bx(g,5,5,8,0,-5,4,0x8a7556)},
+mud:g=>{bx(g,8,8,8,-6,0,4,0xb98a52);bx(g,8,6,14,3,3,7,0xa8743a);bx(g,6,6,5,6,-5,2.5,0xc9a06a);bx(g,3,3,18,-1,-6,9,0x8f5f2e)},
+tomb:g=>{bx(g,14,10,6,0,0,3,0xa5663a);bx(g,10,7,6,0,0,9,0xb27545);bx(g,6,5,6,0,0,15,0xc08550)},
+roshan:g=>{bx(g,10,8,20,0,0,10,0xd9c7a0);bx(g,6,.8,4,0,-4.3,14,0x6b4423);bx(g,6,.8,4,0,-4.3,7,0x6b4423);bx(g,12,10,1.5,0,0,20.5,0xb98a52)},
+palm:g=>{[[-5,0],[5,3]].forEach(p=>{cyl(g,1,1.4,14,p[0],p[1],7,0x6b4423);ball(g,5,p[0],p[1],15,0x2e7d32,.5)})},
+tree:g=>{[[-5,0],[5,3],[0,-5]].forEach(p=>{cone(g,4,14,p[0],p[1],7,0x2e7d32)})},
+tower:g=>{bx(g,10,10,6,0,0,3,0x9c6a3a);bx(g,8,8,6,0,0,9,0xb07a45);bx(g,6,6,6,0,0,15,0xc48c52);bx(g,4,4,5,0,0,20.5,0x8f5f2e)},
+light:g=>{bx(g,10,10,3,0,0,1.5,0xcdbf9f);cyl(g,2.5,3.5,18,0,0,12,0xf4f1e8);ball(g,3.2,0,0,22,0xa63a2b)},
+ruin:g=>{bx(g,16,2,5,0,-7,2.5,0xb08a58);bx(g,16,2,5,0,7,2.5,0xb08a58);bx(g,2,16,5,-7,0,2.5,0xb08a58);bx(g,2,16,5,7,0,2.5,0xb08a58);bx(g,3,3,11,0,0,5.5,0x8f5f2e)}};
+const mesh={},lmg={},lab={},nsp={},GOLD=[0xb79ce6,0xa688d9,0xc7b3ee,0x9b7fd1,0xb190e0],DEPTH=14,SC=1.7;
+const tex=(w,h,fn)=>{const cv=document.createElement('canvas');cv.width=w;cv.height=h;const c=cv.getContext('2d');fn(c);return {c:c,t:new THREE.CanvasTexture(cv)}};
+for(const k in POLY){
+  const s=new THREE.Shape();POLY[k].forEach((p,i)=>{const x=p[0]-200,y=180-p[1];i?s.lineTo(x,y):s.moveTo(x,y)});
+  const m=new THREE.Mesh(new THREE.ExtrudeGeometry(s,{depth:DEPTH,bevelEnabled:true,bevelSize:1,bevelThickness:1,bevelSegments:1}),mat(GOLD[k%5]));
+  m.userData.k=+k;grp.add(m);mesh[k]=m;
+  const x=POS[k][0]-200,y=180-POS[k][1];
+  const g=new THREE.Group();MK[LM[k][1]](g);g.scale.set(SC,SC,SC);g.position.set(x,y,DEPTH+1.5);grp.add(g);lmg[k]=g;
+  const lt=tex(400,100,c=>{c.fillStyle='rgba(250,247,255,.97)';c.fillRect(0,0,400,100);c.strokeStyle='#9b7fd1';c.lineWidth=7;c.strokeRect(4,4,392,92);c.fillStyle='#3b2a5c';c.font='bold 46px Tajawal,Tahoma,sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(LM[k][0],200,52,370)});
+  const ls=new THREE.Sprite(new THREE.SpriteMaterial({map:lt.t,depthTest:false}));ls.scale.set(100,25,1);ls.position.set(x,y,DEPTH+46);ls.renderOrder=2;grp.add(ls);lab[k]=ls;
+  const nt=tex(64,64,()=>{});const ns=new THREE.Sprite(new THREE.SpriteMaterial({map:nt.t,depthTest:false}));
+  ns.scale.set(28,28,1);ns.position.set(x,y,DEPTH+72);ns.renderOrder=3;ns.userData.k=+k;ns.userData.nt=nt;grp.add(ns);nsp[k]=ns;
+}
+drawNum=k=>{const o=nsp[k].userData.nt,c=o.c;c.clearRect(0,0,64,64);c.fillStyle='#6b4fa3';c.beginPath();c.arc(32,32,28,0,7);c.fill();c.lineWidth=4;c.strokeStyle='#fff';c.stroke();c.fillStyle='#fff';c.font='bold 36px sans-serif';c.textAlign='center';c.textBaseline='middle';c.fillText(disp[k],32,34);o.t.needsUpdate=true};
+applyScene=()=>{for(const k in POLY){const on=sel.includes(+k);mesh[k].scale.z=on?1:.35;mesh[k].material.color.setHex(on?GOLD[k%5]:0xddd5ee);lmg[k].visible=lab[k].visible=nsp[k].visible=on;if(on)drawNum(k)}};
+applyScene();
+let down=null,spin=0,tilt=-.85;const el=rd.domElement;
+el.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY,m:false};el.setPointerCapture(e.pointerId)});
+el.addEventListener('pointermove',e=>{if(!down)return;const dx=e.clientX-down.x,dy=e.clientY-down.y;if(Math.abs(dx)+Math.abs(dy)>6)down.m=true;if(!down.m)return;spin=Math.max(-1,Math.min(1,spin+dx*.01));tilt=Math.max(-1.3,Math.min(-.4,tilt+dy*.008));grp.rotation.z=spin;piv.rotation.x=tilt;down.x=e.clientX;down.y=e.clientY});
+const rc=new THREE.Raycaster(),v=new THREE.Vector2(),targets=Object.values(mesh).concat(Object.values(nsp));
+el.addEventListener('pointerup',e=>{if(!down)return;const mv=down.m;down=null;if(mv)return;const r=el.getBoundingClientRect();v.set((e.clientX-r.left)/r.width*2-1,-((e.clientY-r.top)/r.height)*2+1);rc.setFromCamera(v,cam);const hit=rc.intersectObjects(targets).find(h=>sel.includes(h.object.userData.k));if(hit)answer(hit.object.userData.k)});
+(function loop(){requestAnimationFrame(loop);if($('game').classList.contains('on'))rd.render(sc,cam)})();
+}catch(e){$('map3d').style.display='none'}
+}
+$("go").onclick=()=>{score=0;total=0;show("game");init3D();next()};
+</script>
+</body>
+</html>
